@@ -4,26 +4,26 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 const schema = a.schema({
   Bucket: a
     .model({
-      name: a.string(),
-      owner: a.string(),
+      name: a.string().required(),
+      owner: a.id(),
     })
-    .authorization(allow => [allow.owner()]),
+    .authorization(allow => [allow.owner(), allow.authenticated().to(['read'])]),
 
   Item: a
     .model({
-      title: a.string(),
+      title: a.string().required(),
       url: a.string(),
       info: a.string(),
-      listID: a.id(),
+      listID: a.id().required(),
     })
     .authorization(allow => [allow.ownerDefinedIn('listID')]),
 
   BucketMember: a
     .model({
       bucketID: a.id(),
-      memberID: a.string(),
+      memberID: a.id(),
     })
-    .authorization(allow => [allow.publicApiKey()]),
+    .authorization(allow => [allow.ownerDefinedIn('memberID').to(['read'])]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -31,7 +31,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "apiKey",
+    defaultAuthorizationMode: "userPool",
     // API Key is used for a.allow.public() rules
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
