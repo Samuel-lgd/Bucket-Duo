@@ -3,6 +3,7 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import BucketItems from "./components/bucketItems.tsx";
+import {loadAccessibleBuckets} from "./functions/loadAccessibleBuckets.ts";
 
 const client = generateClient<Schema>();
 
@@ -16,14 +17,24 @@ function App() {
   }
 
   useEffect(() => {
-    client.models.Bucket.list().then((res) => {
-      setBuckets(res.data);
-    });
+    const load = async () => {
+      try {
+        const userId = user?.userId;
+        if (!userId) return;
+
+        const accessibleBuckets = await loadAccessibleBuckets(userId);
+        setBuckets(accessibleBuckets);
+      } catch (err) {
+        console.error("Failed to load buckets", err);
+      }
+    };
+
+    load();
   }, []);
 
-  function createBucket() {
+  async function createBucket() {
     const name = window.prompt("Give a name to your bucket")
-    const owner = user?.signInDetails?.loginId;
+    const owner = user?.userId;
 
     if (!name || !owner) {
       alert("Please provide a name and owner for the bucket");
@@ -38,11 +49,12 @@ function App() {
     client.models.Bucket.create({ name: name, owner: owner })
 
     client.models.Bucket.list().then((res) => {
+      console.log(res.data);
       setBuckets(res.data);
     });
   }
 
-  function deleteBucket(bucket: Schema["Bucket"]["type"]) {
+  async function deleteBucket(bucket: Schema["Bucket"]["type"]) {
     if (window.confirm("Are you sure you want to delete this bucket?")) {
       client.models.Bucket.delete({ id: bucket.id })
       setBuckets(buckets.filter((b) => b.id !== bucket.id));

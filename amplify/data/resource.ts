@@ -2,28 +2,29 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 
 const schema = a.schema({
-  Bucket: a
-    .model({
-      name: a.string().required(),
-      owner: a.id(),
-    })
-    .authorization(allow => [allow.owner(), allow.authenticated().to(['read'])]),
+  Bucket: a.model({
+    name:    a.string().required(),
+    owner:   a.id().required(),
+    members: a.id().array(),
+    items:   a.hasMany( 'Item', "bucketID"),
+  })
+    .authorization(allow => [
+      allow.owner(),
+      allow.owner().identityClaim('members').to(['read'])
+    ]),
 
-  Item: a
-    .model({
-      title: a.string().required(),
-      url: a.string(),
-      info: a.string(),
-      listID: a.id().required(),
-    })
-    .authorization(allow => [allow.ownerDefinedIn('listID')]),
-
-  BucketMember: a
-    .model({
-      bucketID: a.id(),
-      memberID: a.id(),
-    })
-    .authorization(allow => [allow.ownerDefinedIn('memberID').to(['read'])]),
+  Item: a.model({
+    title:    a.string().required(),
+    url:      a.string(),
+    info:     a.string(),
+    bucketID: a.id().required(),
+    owner:    a.id().required(),
+    members:  a.id().array(),
+  })
+    .authorization(allow => [
+      allow.owner(),
+      allow.owner().identityClaim('members'),
+    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
