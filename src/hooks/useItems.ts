@@ -5,7 +5,6 @@ import {createDataService} from '../services/mockDataService';
 
 export function useItems(bucketId: string, onBucketUpdate?: () => void) {
   const [items, setItems] = useState<Schema["Item"]["type"][]>([]);
-  const [selectedItem, setSelectedItem] = useState<Schema["Item"]["type"] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategoryID, setSelectedCategoryID] = useState<string | null>(null);
   const { user } = useAuthenticator();
@@ -35,18 +34,13 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
       }
       
       setItems(result.data);
-      
-      // Réinitialiser l'item sélectionné s'il n'est plus dans la liste filtrée
-      if (selectedItem && !result.data.some(item => item.id === selectedItem.id)) {
-        setSelectedItem(null);
-      }
     } catch (error) {
       console.error("Error loading items:", error);
       setItems([]);
     } finally {
       setIsLoading(false);
     }
-  }, [bucketId, selectedCategoryID, selectedItem]);
+  }, [bucketId, selectedCategoryID]);
 
   // Utiliser deux effets séparés pour éviter les dépendances circulaires
   useEffect(() => {
@@ -71,7 +65,7 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     
     try {
       setIsLoading(true);
-      const result = await client.models.Item.create({
+      await client.models.Item.create({
         title,
         url: url || undefined,
         info: info || undefined,
@@ -81,7 +75,6 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
       });
       
       await loadItems();
-      setSelectedItem(result.data);
       if (onBucketUpdate) onBucketUpdate();
     } catch (error) {
       console.error("Error creating item:", error);
@@ -102,17 +95,13 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     
     try {
       setIsLoading(true);
-      const updatedItem = await client.models.Item.update({
+      await client.models.Item.update({
         id: itemId,
         title,
         url: url || undefined,
         info: info || undefined,
         // Ne pas modifier la catégorie lors d'une mise à jour simple
       });
-      
-      if (selectedItem?.id === itemId) {
-        setSelectedItem(updatedItem.data);
-      }
       
       await loadItems();
     } catch (error) {
@@ -129,10 +118,6 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
       setIsLoading(true);
       await client.models.Item.delete({ id: itemId });
       
-      if (selectedItem?.id === itemId) {
-        setSelectedItem(null);
-      }
-      
       await loadItems();
       if (onBucketUpdate) onBucketUpdate();
     } catch (error) {
@@ -144,8 +129,6 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
 
   return {
     items,
-    selectedItem,
-    setSelectedItem,
     isLoading,
     createItem,
     updateItem,

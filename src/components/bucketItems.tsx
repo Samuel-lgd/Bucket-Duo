@@ -1,7 +1,7 @@
 import type {Schema} from "../../amplify/data/resource";
-import {ItemDetail} from "./ItemDetail";
 import {useItems} from "../hooks/useItems";
 import {useCategories} from "../hooks/useCategories";
+import {ItemCard} from "./ItemCard";
 
 type BucketItemsProps = { 
   bucket: Schema["Bucket"]["type"];
@@ -13,8 +13,6 @@ function BucketItems({ bucket, onBucketUpdate }: BucketItemsProps) {
   
   const {
     items,
-    selectedItem,
-    setSelectedItem,
     isLoading: itemsLoading,
     createItem,
     updateItem,
@@ -23,13 +21,17 @@ function BucketItems({ bucket, onBucketUpdate }: BucketItemsProps) {
     setSelectedCategoryID
   } = useItems(bucket.id, onBucketUpdate);
 
-  // État de chargement combiné
   const isLoading = categoriesLoading || itemsLoading;
 
-  // Fonction pour gérer le changement de catégorie - assurons-nous qu'elle fonctionne correctement
   const handleCategoryChange = (categoryId: string | null) => {
-    console.log("Changing category to:", categoryId);
     setSelectedCategoryID(categoryId);
+  };
+
+  // Vérifier si la catégorie sélectionnée est une catégorie système
+  const isSystemCategory = () => {
+    if (!selectedCategoryID) return false;
+    const selectedCategory = categories.find(cat => cat.id === selectedCategoryID);
+    return selectedCategory?.system === true;
   };
 
   return (
@@ -66,9 +68,17 @@ function BucketItems({ bucket, onBucketUpdate }: BucketItemsProps) {
       
       <div className="items-header">
         <h3>Items ({items.length})</h3>
-        <button onClick={createItem} className="btn btn-primary">
-          <i className="fa-solid fa-plus me-2"></i> Ajouter un item
-        </button>
+        <div className="action-buttons">
+          <button onClick={createItem} className="btn btn-primary">
+            <i className="fa-solid fa-plus me-2"></i> Ajouter un item
+          </button>
+          
+          {isSystemCategory() && (
+            <button className="btn btn-success ms-2">
+              <i className="fa-solid fa-magic me-2"></i> Ajout magique
+            </button>
+          )}
+        </div>
       </div>
       
       {isLoading ? (
@@ -87,58 +97,16 @@ function BucketItems({ bucket, onBucketUpdate }: BucketItemsProps) {
           ) : (
             <div className="items-grid">
               {items.map((item) => (
-                <div 
-                  key={item.id} 
-                  className={`item-card ${selectedItem?.id === item.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedItem(item)}
-                >
-                  {/* Badge de catégorie */}
-                  <div className="item-category-badge">
-                    {categories.find(cat => cat.id === item.categoryID)?.name || 'Sans catégorie'}
-                  </div>
-                  
-                  <div className="item-card-actions">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateItem(item.id);
-                      }} 
-                      className="btn btn-success item-card-action"
-                      title="Modifier"
-                    >
-                      <i className="fa-solid fa-pen"></i>
-                    </button>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteItem(item.id);
-                      }} 
-                      className="btn btn-danger item-card-action"
-                      title="Supprimer"
-                    >
-                      <i className="fa-solid fa-trash"></i>
-                    </button>
-                  </div>
-                  <h3 className="item-card-title">{item.title}</h3>
-                  {item.url && (
-                    <div className="item-card-url">
-                      <i className="fa-solid fa-link me-2"></i>
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                        Ouvrir le lien
-                      </a>
-                    </div>
-                  )}
-                  {item.info && (
-                    <div className="item-card-preview">
-                      {item.info.length > 60 ? `${item.info.substring(0, 60)}...` : item.info}
-                    </div>
-                  )}
-                </div>
+                <ItemCard 
+                  key={item.id}
+                  item={item}
+                  categoryName={categories.find(cat => cat.id === item.categoryID)?.name}
+                  onUpdate={updateItem}
+                  onDelete={deleteItem}
+                />
               ))}
             </div>
           )}
-          
-          {selectedItem && <ItemDetail item={selectedItem} categories={categories} />}
         </>
       )}
     </div>
@@ -146,3 +114,4 @@ function BucketItems({ bucket, onBucketUpdate }: BucketItemsProps) {
 }
 
 export default BucketItems;
+
