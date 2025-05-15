@@ -1,11 +1,21 @@
 import {useEffect, useState} from "react";
-import type { Schema } from "../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
-import { useAuthenticator } from '@aws-amplify/ui-react';
+import type {Schema} from "../amplify/data/resource";
+import {generateClient} from "aws-amplify/data";
+import {useAuthenticator} from '@aws-amplify/ui-react';
 import BucketItems from "./components/bucketItems.tsx";
+import {createDataService} from "./services/mockDataService";
 import './App.css';
 
-const client = generateClient<Schema>();
+// Définir si on utilise les données mockées ou pas (true = mockées, false = API réelle)
+const USE_MOCK_DATA = true;
+
+// Initialiser le client de données (réel ou mockée)
+let dataClient: any;
+if (USE_MOCK_DATA) {
+  dataClient = createDataService(true);
+} else {
+  dataClient = generateClient<Schema>();
+}
 
 function App() {
   const [buckets, setBuckets] = useState<Array<Schema["Bucket"]["type"]>>([]);
@@ -20,7 +30,7 @@ function App() {
   async function loadBuckets() {
     try {
       setIsLoading(true);
-      const { data } = await client.models.Bucket.list();
+      const { data } = await dataClient.models.Bucket.list();
       setBuckets(data);
     } catch (error) {
       console.error("Error loading buckets:", error);
@@ -39,9 +49,9 @@ function App() {
     
     try {
       setIsLoading(true);
-      await client.models.Bucket.create({
+      await dataClient.models.Bucket.create({
         name: bucketName,
-        owner: user?.userId || "",
+        owner: user?.userId || "current-user",
       });
       await loadBuckets();
     } catch (error) {
@@ -56,7 +66,7 @@ function App() {
     
     try {
       setIsLoading(true);
-      await client.models.Bucket.delete({ id: bucketId });
+      await dataClient.models.Bucket.delete({ id: bucketId });
       if (selectedBucket?.id === bucketId) {
         setSelectedBucket(null);
       }
@@ -77,7 +87,7 @@ function App() {
     
     try {
       setIsLoading(true);
-      const updatedBucket = await client.models.Bucket.update({
+      const updatedBucket = await dataClient.models.Bucket.update({
         id: bucketId,
         name: newName,
       });
@@ -97,7 +107,8 @@ function App() {
   return (
     <main className="app-container">
       <header className="app-header">
-        <h1>Welcome, {user?.signInDetails?.loginId}</h1>
+        <h1>Welcome, {user?.signInDetails?.loginId?.split("@")[0] || "Développeur"}</h1>
+        {USE_MOCK_DATA && <div className="mock-data-badge">Mode test (données fictives)</div>}
         <button onClick={signOut} className="sign-out-btn">Sign out</button>
       </header>
       
@@ -126,7 +137,7 @@ function App() {
         </div>
 
         <div className="items-section">
-          {selectedBucket && <BucketItems bucket={selectedBucket} onBucketUpdate={loadBuckets} />}
+          {selectedBucket && <BucketItems bucket={selectedBucket} onBucketUpdate={loadBuckets} useMockData={USE_MOCK_DATA} />}
         </div>
       </div>
     </main>

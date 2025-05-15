@@ -2,26 +2,34 @@ import type {Schema} from "../../amplify/data/resource.ts";
 import {useEffect, useState} from "react";
 import {generateClient} from "aws-amplify/data";
 import {useAuthenticator} from "@aws-amplify/ui-react";
+import {createDataService} from "../services/mockDataService";
 import './bucketItems.css';
 
 const client = generateClient<Schema>();
 
 function BucketItems({ 
   bucket, 
-  onBucketUpdate 
+  onBucketUpdate,
+  useMockData = false 
 }: { 
   bucket: Schema["Bucket"]["type"];
   onBucketUpdate?: () => void;
+  useMockData?: boolean;
 }) {
   const [items, setItems] = useState<Array<Schema["Item"]["type"]>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [viewItem, setViewItem] = useState<Schema["Item"]["type"] | null>(null);
   const { user } = useAuthenticator();
+  
+  // Utiliser le service de données approprié (mock ou réel)
+  const dataClient = useMockData 
+    ? createDataService(true) 
+    : client;
 
   async function loadItems() {
     try {
       setIsLoading(true);
-      const { data } = await client.models.Item.list({
+      const { data } = await dataClient.models.Item.list({
         filter: { bucketID: { eq: bucket.id } }
       });
       setItems(data);
@@ -45,12 +53,12 @@ function BucketItems({
     
     try {
       setIsLoading(true);
-      await client.models.Item.create({
+      await dataClient.models.Item.create({
         title,
         url: url || undefined,
         info: info || undefined,
         bucketID: bucket.id,
-        owner: user?.userId || "",
+        owner: user?.userId || "current-user",
       });
       
       await loadItems();
@@ -74,7 +82,7 @@ function BucketItems({
     
     try {
       setIsLoading(true);
-      await client.models.Item.update({
+      await dataClient.models.Item.update({
         id: itemId,
         title,
         url: url || undefined,
@@ -94,7 +102,7 @@ function BucketItems({
     
     try {
       setIsLoading(true);
-      await client.models.Item.delete({ id: itemId });
+      await dataClient.models.Item.delete({ id: itemId });
       
       if (viewItem?.id === itemId) {
         setViewItem(null);
