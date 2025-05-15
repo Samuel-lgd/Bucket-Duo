@@ -1,33 +1,63 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import type {Schema} from '../../amplify/data/resource';
 import {useAuthenticator} from '@aws-amplify/ui-react';
-import {dataClient} from '../services/dataService';
+import {createDataService} from '../services/mockDataService';
 
 export function useItems(bucketId: string, onBucketUpdate?: () => void) {
   const [items, setItems] = useState<Schema["Item"]["type"][]>([]);
   const [selectedItem, setSelectedItem] = useState<Schema["Item"]["type"] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCategoryID, setSelectedCategoryID] = useState<string | null>(null);
   const { user } = useAuthenticator();
+  
+  // Utiliser le mock pour l'instant
+  const client = createDataService(true);
 
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     try {
       setIsLoading(true);
-      const { data } = await dataClient.models.Item.list({
-        filter: { bucketID: { eq: bucketId } }
-      });
-      setItems(data);
+      
+      let result;
+      
+      if (selectedCategoryID) {
+        // Utiliser la fonction filter explicitement comme spécifiée dans mockDataService
+        result = await client.models.Item.list({
+          filter: {
+            bucketID: { eq: bucketId },
+            categoryID: { eq: selectedCategoryID }
+          }
+        });
+      } else {
+        // Si aucune catégorie n'est sélectionnée, ne filtrer que par bucketID
+        result = await client.models.Item.list({
+          filter: { bucketID: { eq: bucketId } }
+        });
+      }
+      
+      setItems(result.data);
+      
+      // Réinitialiser l'item sélectionné s'il n'est plus dans la liste filtrée
+      if (selectedItem && !result.data.some(item => item.id === selectedItem.id)) {
+        setSelectedItem(null);
+      }
     } catch (error) {
       console.error("Error loading items:", error);
+      setItems([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [bucketId, selectedCategoryID, selectedItem]);
 
+  // Utiliser deux effets séparés pour éviter les dépendances circulaires
   useEffect(() => {
     loadItems();
-    // Reset selected item when bucket changes
-    setSelectedItem(null);
-  }, [bucketId]);
+  }, [loadItems]);
+
+  // Définir la catégorie par défaut à c1 seulement au premier montage du composant
+  useEffect(() => {
+    // Définir la catégorie par défaut (première catégorie)
+    setSelectedCategoryID("c1");
+  }, []);
 
   const createItem = async () => {
     const title = window.prompt("Enter item title:");
@@ -36,17 +66,22 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     const url = window.prompt("Enter item URL (optional):");
     const info = window.prompt("Enter item information (optional):");
     
+    // Utiliser la catégorie sélectionnée ou la catégorie par défaut ("c1")
+    const categoryID = selectedCategoryID || "c1";
+    
     try {
       setIsLoading(true);
-      await dataClient.models.Item.create({
+      const result = await client.models.Item.create({
         title,
         url: url || undefined,
         info: info || undefined,
         bucketID: bucketId,
+        categoryID,
         owner: user?.userId || "current-user",
       });
       
       await loadItems();
+      setSelectedItem(result.data);
       if (onBucketUpdate) onBucketUpdate();
     } catch (error) {
       console.error("Error creating item:", error);
@@ -67,11 +102,12 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     
     try {
       setIsLoading(true);
-      const updatedItem = await dataClient.models.Item.update({
+      const updatedItem = await client.models.Item.update({
         id: itemId,
         title,
         url: url || undefined,
         info: info || undefined,
+        // Ne pas modifier la catégorie lors d'une mise à jour simple
       });
       
       if (selectedItem?.id === itemId) {
@@ -91,7 +127,7 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     
     try {
       setIsLoading(true);
-      await dataClient.models.Item.delete({ id: itemId });
+      await client.models.Item.delete({ id: itemId });
       
       if (selectedItem?.id === itemId) {
         setSelectedItem(null);
@@ -114,6 +150,8 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     createItem,
     updateItem,
     deleteItem,
-    refreshItems: loadItems
+    refreshItems: loadItems,
+    selectedCategoryID,
+    setSelectedCategoryID
   };
 }

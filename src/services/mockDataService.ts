@@ -4,7 +4,7 @@ import {v4 as uuidv4} from 'uuid';
 let mockCategories: Schema["Category"]["type"][] = [
   {
     id: "c1",
-    name: "Tourisme",
+    name: "Youtube",
     system: true,
     owner: "current-user",
     createdAt: new Date().toISOString(),
@@ -12,7 +12,7 @@ let mockCategories: Schema["Category"]["type"][] = [
   },
   {
     id: "c2",
-    name: "Gastronomie",
+    name: "Séries & Films",
     system: true,
     owner: "current-user",
     createdAt: new Date().toISOString(),
@@ -20,7 +20,15 @@ let mockCategories: Schema["Category"]["type"][] = [
   },
   {
     id: "c3",
-    name: "Bricolage",
+    name: "Restaurants",
+    system: true,
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "c4",
+    name: "Tourisme",
     system: true,
     owner: "current-user",
     createdAt: new Date().toISOString(),
@@ -31,79 +39,149 @@ let mockCategories: Schema["Category"]["type"][] = [
 let mockBuckets: Schema["Bucket"]["type"][] = [
   {
     id: "b1",
-    name: "Voyage en Italie",
+    name: "Samuel & Laura",
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
-  {
-    id: "b2",
-    name: "Recettes de cuisine",
-    owner: "current-user",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "b3",
-    name: "Projets DIY",
-    owner: "current-user",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }
 ];
 
 let mockItems: Schema["Item"]["type"][] = [
+  // Catégorie Youtube
   {
     id: "i1",
-    title: "Colisée à Rome",
-    url: "https://www.example.com/colisee",
-    info: "Visiter le Colisée tôt le matin pour éviter les foules",
+    title: "100 jours à manger bleu - L'Effet Papillon",
+    url: "https://www.youtube.com/watch?v=mBcDDDEK8f8",
+    info: "Reportage sur une expérience alimentaire extrême",
     bucketID: "b1",
-    categoryID: "c1", // Catégorie Tourisme
+    categoryID: "c1",
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: "i2",
-    title: "Venise",
-    url: "https://www.example.com/venise",
-    info: "Penser à réserver un tour en gondole à l'avance",
+    title: "Vilbrequin : On fait un moteur de F1 en LEGO !",
+    url: "https://www.youtube.com/watch?v=DKJ8E8Qo9lA",
+    info: "Vidéo de construction et test d'un moteur de F1 en LEGO",
     bucketID: "b1",
-    categoryID: "c1", // Catégorie Tourisme
+    categoryID: "c1",
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: "i3",
-    title: "Pizza Margherita",
-    url: "https://www.example.com/pizza",
-    info: "Recette authentique napolitaine",
-    bucketID: "b2",
-    categoryID: "c2", // Catégorie Gastronomie
+    title: "Squeezie - Qui est l'imposteur ?",
+    url: "https://www.youtube.com/watch?v=QnDWIZuWYW8",
+    info: "Vidéo gameplay très fun avec un concept intéressant",
+    bucketID: "b1",
+    categoryID: "c1",
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+
+  // Catégorie Séries & Films
   {
     id: "i4",
-    title: "Tiramisu",
-    url: "https://www.example.com/tiramisu",
-    info: "Dessert italien classique",
-    bucketID: "b2",
-    categoryID: "c2", // Catégorie Gastronomie
+    title: "Stranger Things - Saison 5",
+    url: "https://www.netflix.com/title/80057281",
+    info: "Sortie prévue fin 2024, dernier épisode de la série",
+    bucketID: "b1",
+    categoryID: "c2",
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: "i5",
-    title: "Étagère flottante",
-    url: "https://www.example.com/etagere",
-    info: "Tutoriel pour fabriquer une étagère en bois",
-    bucketID: "b3",
-    categoryID: "c3", // Catégorie Bricolage
+    title: "The Bear - Saison 3",
+    url: "https://www.disneyplus.com/series/the-bear/69SWl0Uj1EQR",
+    info: "Nouvelle saison disponible en streaming, à regarder ensemble",
+    bucketID: "b1",
+    categoryID: "c2",
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "i6",
+    title: "Dune : Deuxième Partie",
+    url: "https://www.allocine.fr/film/fichefilm_gen_cfilm=275274.html",
+    info: "Film à voir au cinéma ou en streaming, adaptation du roman de Frank Herbert",
+    bucketID: "b1",
+    categoryID: "c2",
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+
+  // Catégorie Restaurants
+  {
+    id: "i7",
+    title: "Le Petit Cambodge",
+    url: "https://www.petitcambodge.fr/",
+    info: "Restaurant cambodgien à Paris, spécialité : Bo bun",
+    bucketID: "b1",
+    categoryID: "c3",
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "i8",
+    title: "La Brigade du Tigre",
+    url: "https://www.labrigadedutigre.fr/",
+    info: "Cuisine asiatique moderne, à essayer pour l'anniversaire de Laura",
+    bucketID: "b1",
+    categoryID: "c3",
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "i9",
+    title: "Le Café des Chats",
+    url: "https://www.lecafedeschats.fr/",
+    info: "Café où l'on peut caresser des chats en buvant un thé/café",
+    bucketID: "b1",
+    categoryID: "c3",
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+
+  // Catégorie Tourisme
+  {
+    id: "i10",
+    title: "Week-end à Lisbonne",
+    url: "https://www.routard.com/guide/code_dest/lisbonne.htm",
+    info: "Idée de city-trip pour cet été, facile d'accès en avion depuis Paris",
+    bucketID: "b1",
+    categoryID: "c4",
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "i11",
+    title: "Randonnée autour du Mont-Blanc",
+    url: "https://www.montourdumontblanc.com/fr/index.aspx",
+    info: "À programmer sur une semaine, possibilité de réserver les refuges à l'avance",
+    bucketID: "b1",
+    categoryID: "c4",
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "i12",
+    title: "Journée au Parc de Versailles",
+    url: "https://www.chateauversailles.fr/",
+    info: "Prévoir pique-nique et vélos pour faire le tour du Grand Canal",
+    bucketID: "b1",
+    categoryID: "c4",
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -207,17 +285,17 @@ export const mockDataService = {
   },
 
   // ITEM OPERATIONS
-  listItems: async (filter?: { bucketID?: { eq: string }, categoryID?: { eq: string } }) => {
+  listItems: async (options?: { filter?: { bucketID?: { eq: string }, categoryID?: { eq: string } } }) => {
     await new Promise(resolve => setTimeout(resolve, 300));
 
     let filteredItems = [...mockItems];
 
-    if (filter?.bucketID?.eq) {
-      filteredItems = filteredItems.filter(item => item.bucketID === filter.bucketID.eq);
+    if (options?.filter?.bucketID?.eq) {
+      filteredItems = filteredItems.filter(item => item.bucketID === options.filter.bucketID.eq);
     }
 
-    if (filter?.categoryID?.eq) {
-      filteredItems = filteredItems.filter(item => item.categoryID === filter.categoryID.eq);
+    if (options?.filter?.categoryID?.eq) {
+      filteredItems = filteredItems.filter(item => item.categoryID === options.filter.categoryID.eq);
     }
 
     return { data: filteredItems };

@@ -10,6 +10,12 @@
   --light-color: #dfe6e9;
   --dark-color: #2d3436;
   
+  /* Nouvelles couleurs pour les catégories */
+  --category-badge-bg: rgba(255, 255, 255, 0.15);
+  --category-badge-text: var(--text-primary);
+  --category-btn-active: var(--primary-color);
+  --category-btn-hover: rgba(255, 255, 255, 0.25);
+  
   /* Couleurs de texte */
   --text-primary: #2f2f2f;
   --text-secondary: rgba(30, 30, 30, 0.8);
@@ -235,7 +241,7 @@ body {
 
 .btn-primary {
   background-color: var(--primary-color);
-  color: var(--text-primary);
+  color: var(--light-color);
 }
 
 .btn-success {
@@ -310,6 +316,7 @@ body {
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--glass-border-light);
   padding: 1.2rem;
+  padding-top: calc(var(--spacing-md) + 1rem);
   transition: var(--transition-default);
   cursor: pointer;
   position: relative;
@@ -529,4 +536,77 @@ body {
 
 .mb-3 {
   margin-bottom: 1rem;
+}
+
+/* Styles pour les catégories */
+.category-filter {
+  background: var(--glass-bg-lighter);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--glass-border-light);
+}
+
+.category-filter-label {
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.category-btn {
+  background: var(--glass-bg-light);
+  border: 1px solid var(--glass-border-light);
+  border-radius: var(--border-radius-sm);
+  padding: calc(var(--spacing-xs) - 0.1rem) var(--spacing-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.category-btn:hover {
+  background: var(--category-btn-hover);
+  transform: translateY(-2px);
+}
+
+.category-btn.active {
+  background: var(--category-btn-active);
+  border-color: var(--category-btn-active);
+  color: white;
+  font-weight: 500;
+}
+
+.item-category-badge {
+  position: absolute;
+  top: var(--spacing-sm);
+  left: var(--spacing-sm);
+  background: var(--category-badge-bg);
+  color: var(--category-badge-text);
+  padding: calc(var(--spacing-xs) - 0.2rem) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 1;
+}
+
+/* Style pour la catégorie dans les détails */
+.item-detail-category {
+  display: flex;
+  align-items: center;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.item-detail-category-name {
+  font-weight: 600;
+  margin-left: 0.3rem;
+  color: var(--primary-color);
 }
