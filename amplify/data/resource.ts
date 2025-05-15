@@ -1,7 +1,16 @@
-import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import {a, type ClientSchema, defineData} from "@aws-amplify/backend";
 
 
 const schema = a.schema({
+  Category: a.model({
+    name:    a.string().required(),
+    system:  a.boolean().required(), // true pour les catégories par défaut
+    owner:   a.id().required(),
+    items:   a.hasMany('Item', 'categoryID'),
+  }).authorization(allow => [
+      allow.owner(),
+    ]),
+
   Bucket: a.model({
     name:    a.string().required(),
     owner:   a.id().required(),
@@ -17,6 +26,8 @@ const schema = a.schema({
     owner:    a.id().required(),
     bucketID: a.id().required(),
     bucket:   a.belongsTo('Bucket', 'bucketID'),
+    categoryID: a.id().required(),
+    category: a.belongsTo('Category', 'categoryID'),
   }).authorization(allow => [
       allow.owner(),
     ]),

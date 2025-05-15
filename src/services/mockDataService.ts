@@ -1,6 +1,33 @@
 import type {Schema} from "../../amplify/data/resource";
 import {v4 as uuidv4} from 'uuid';
 
+let mockCategories: Schema["Category"]["type"][] = [
+  {
+    id: "c1",
+    name: "Tourisme",
+    system: true,
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "c2",
+    name: "Gastronomie",
+    system: true,
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "c3",
+    name: "Bricolage",
+    system: true,
+    owner: "current-user",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+];
+
 let mockBuckets: Schema["Bucket"]["type"][] = [
   {
     id: "b1",
@@ -32,6 +59,7 @@ let mockItems: Schema["Item"]["type"][] = [
     url: "https://www.example.com/colisee",
     info: "Visiter le Colisée tôt le matin pour éviter les foules",
     bucketID: "b1",
+    categoryID: "c1", // Catégorie Tourisme
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -42,6 +70,7 @@ let mockItems: Schema["Item"]["type"][] = [
     url: "https://www.example.com/venise",
     info: "Penser à réserver un tour en gondole à l'avance",
     bucketID: "b1",
+    categoryID: "c1", // Catégorie Tourisme
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -52,6 +81,7 @@ let mockItems: Schema["Item"]["type"][] = [
     url: "https://www.example.com/pizza",
     info: "Recette authentique napolitaine",
     bucketID: "b2",
+    categoryID: "c2", // Catégorie Gastronomie
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -62,6 +92,7 @@ let mockItems: Schema["Item"]["type"][] = [
     url: "https://www.example.com/tiramisu",
     info: "Dessert italien classique",
     bucketID: "b2",
+    categoryID: "c2", // Catégorie Gastronomie
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -72,6 +103,7 @@ let mockItems: Schema["Item"]["type"][] = [
     url: "https://www.example.com/etagere",
     info: "Tutoriel pour fabriquer une étagère en bois",
     bucketID: "b3",
+    categoryID: "c3", // Catégorie Bricolage
     owner: "current-user",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -80,6 +112,51 @@ let mockItems: Schema["Item"]["type"][] = [
 
 // Service de données mockées qui imite l'API GraphQL
 export const mockDataService = {
+  // CATEGORY OPERATIONS
+  listCategories: async () => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return { data: [...mockCategories] };
+  },
+
+  createCategory: async (input: Partial<Schema["Category"]["type"]>) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const newCategory: Schema["Category"]["type"] = {
+      id: uuidv4(),
+      name: input.name || "Nouvelle catégorie",
+      system: input.system || false,
+      owner: input.owner || "current-user",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    mockCategories.push(newCategory);
+    return { data: newCategory };
+  },
+
+  updateCategory: async (input: Partial<Schema["Category"]["type"]>) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const index = mockCategories.findIndex(c => c.id === input.id);
+
+    if (index === -1) {
+      throw new Error("Category not found");
+    }
+
+    const updatedCategory = {
+      ...mockCategories[index],
+      ...input,
+      updatedAt: new Date().toISOString()
+    };
+
+    mockCategories[index] = updatedCategory;
+    return { data: updatedCategory };
+  },
+
+  deleteCategory: async (input: { id: string }) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const initialLength = mockCategories.length;
+    mockCategories = mockCategories.filter(c => c.id !== input.id);
+    return { success: mockCategories.length < initialLength };
+  },
+
   // BUCKET OPERATIONS
   listBuckets: async () => {
     // Simuler la latence du réseau
@@ -103,17 +180,17 @@ export const mockDataService = {
   updateBucket: async (input: Partial<Schema["Bucket"]["type"]>) => {
     await new Promise(resolve => setTimeout(resolve, 300));
     const index = mockBuckets.findIndex(b => b.id === input.id);
-    
+
     if (index === -1) {
       throw new Error("Bucket not found");
     }
-    
+
     const updatedBucket = {
       ...mockBuckets[index],
       ...input,
       updatedAt: new Date().toISOString()
     };
-    
+
     mockBuckets[index] = updatedBucket;
     return { data: updatedBucket };
   },
@@ -122,24 +199,28 @@ export const mockDataService = {
     await new Promise(resolve => setTimeout(resolve, 300));
     const initialLength = mockBuckets.length;
     mockBuckets = mockBuckets.filter(b => b.id !== input.id);
-    
+
     // Supprimer également les items associés à ce bucket
     mockItems = mockItems.filter(i => i.bucketID !== input.id);
-    
+
     return { success: mockBuckets.length < initialLength };
   },
 
   // ITEM OPERATIONS
-  listItems: async (filter?: { bucketID: { eq: string } }) => {
+  listItems: async (filter?: { bucketID?: { eq: string }, categoryID?: { eq: string } }) => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
+    let filteredItems = [...mockItems];
+
     if (filter?.bucketID?.eq) {
-      return { 
-        data: mockItems.filter(item => item.bucketID === filter.bucketID.eq) 
-      };
+      filteredItems = filteredItems.filter(item => item.bucketID === filter.bucketID.eq);
     }
-    
-    return { data: [...mockItems] };
+
+    if (filter?.categoryID?.eq) {
+      filteredItems = filteredItems.filter(item => item.categoryID === filter.categoryID.eq);
+    }
+
+    return { data: filteredItems };
   },
 
   createItem: async (input: Partial<Schema["Item"]["type"]>) => {
@@ -150,6 +231,7 @@ export const mockDataService = {
       url: input.url,
       info: input.info,
       bucketID: input.bucketID || "",
+      categoryID: input.categoryID || "c1", // Catégorie par défaut
       owner: input.owner || "current-user",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -161,17 +243,17 @@ export const mockDataService = {
   updateItem: async (input: Partial<Schema["Item"]["type"]>) => {
     await new Promise(resolve => setTimeout(resolve, 300));
     const index = mockItems.findIndex(i => i.id === input.id);
-    
+
     if (index === -1) {
       throw new Error("Item not found");
     }
-    
+
     const updatedItem = {
       ...mockItems[index],
       ...input,
       updatedAt: new Date().toISOString()
     };
-    
+
     mockItems[index] = updatedItem;
     return { data: updatedItem };
   },
@@ -189,6 +271,12 @@ export function createDataService(useMock = false) {
   if (useMock) {
     return {
       models: {
+        Category: {
+          list: mockDataService.listCategories,
+          create: mockDataService.createCategory,
+          update: mockDataService.updateCategory,
+          delete: mockDataService.deleteCategory
+        },
         Bucket: {
           list: mockDataService.listBuckets,
           create: mockDataService.createBucket,
