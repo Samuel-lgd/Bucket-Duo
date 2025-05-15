@@ -5,25 +5,20 @@ const schema = a.schema({
   Bucket: a.model({
     name:    a.string().required(),
     owner:   a.id().required(),
-    members: a.id().array(),
-    items:   a.hasMany( 'Item', "bucketID"),
-  })
-    .authorization(allow => [
+    items:   a.hasMany('Item', 'bucketID'),
+  }).authorization(allow => [
       allow.owner(),
-      allow.owner().identityClaim('members').to(['read'])
     ]),
 
   Item: a.model({
     title:    a.string().required(),
     url:      a.string(),
     info:     a.string(),
-    bucketID: a.id().required(),
     owner:    a.id().required(),
-    members:  a.id().array(),
-  })
-    .authorization(allow => [
+    bucketID: a.id().required(),
+    bucket:   a.belongsTo('Bucket', 'bucketID'),
+  }).authorization(allow => [
       allow.owner(),
-      allow.owner().identityClaim('members'),
     ]),
 });
 
