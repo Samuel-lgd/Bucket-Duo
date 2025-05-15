@@ -3,14 +3,14 @@ import type {Schema} from '../../amplify/data/resource';
 type ItemCardProps = {
   item: Schema["Item"]["type"];
   categoryName?: string;
-  onUpdate: (item: Schema["Item"]["type"]) => void;
+  onUpdate: (itemId: string) => void;
   onDelete: (itemId: string) => void;
 };
 
 export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
   const handleEditClick = () => {
     const updatedItem = { ...item, title: `${item.title} (modifié)` };
-    onUpdate(updatedItem);
+    onUpdate(updatedItem.id);
   };
 
   const handleDeleteClick = () => {

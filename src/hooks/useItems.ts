@@ -7,12 +7,22 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
   const [items, setItems] = useState<Schema["Item"]["type"][]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategoryID, setSelectedCategoryID] = useState<string | null>(null);
+  const [client, setClient] = useState<any>(null);
   const { user } = useAuthenticator();
   
-  // Utiliser le mock pour l'instant
-  const client = createDataService(true);
+  // Initialiser le client lors du montage du composant
+  useEffect(() => {
+    const initClient = async () => {
+      const dataService = await createDataService(true);
+      setClient(dataService);
+    };
+    
+    initClient();
+  }, []);
 
   const loadItems = useCallback(async () => {
+    if (!client) return; // Ne pas essayer de charger si le client n'est pas prêt
+    
     try {
       setIsLoading(true);
       
@@ -40,12 +50,14 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     } finally {
       setIsLoading(false);
     }
-  }, [bucketId, selectedCategoryID]);
+  }, [bucketId, selectedCategoryID, client]);
 
   // Utiliser deux effets séparés pour éviter les dépendances circulaires
   useEffect(() => {
-    loadItems();
-  }, [loadItems]);
+    if (client) { // Ne charger que lorsque le client est disponible
+      loadItems();
+    }
+  }, [loadItems, client]);
 
   // Définir la catégorie par défaut à c1 seulement au premier montage du composant
   useEffect(() => {
@@ -54,6 +66,8 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
   }, []);
 
   const createItem = async () => {
+    if (!client) return; // Vérifier que le client est disponible
+    
     const title = window.prompt("Enter item title:");
     if (!title) return;
     
@@ -84,6 +98,8 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
   };
 
   const updateItem = async (itemId: string) => {
+    if (!client) return; // Vérifier que le client est disponible
+    
     const item = items.find(i => i.id === itemId);
     if (!item) return;
     
@@ -112,6 +128,8 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
   };
 
   const deleteItem = async (itemId: string) => {
+    if (!client) return; // Vérifier que le client est disponible
+    
     if (!window.confirm("Are you sure you want to delete this item?")) return;
     
     try {

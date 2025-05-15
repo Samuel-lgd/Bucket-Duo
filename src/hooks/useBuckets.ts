@@ -7,12 +7,25 @@ export function useBuckets() {
   const [buckets, setBuckets] = useState<Schema["Bucket"]["type"][]>([]);
   const [selectedBucket, setSelectedBucket] = useState<Schema["Bucket"]["type"] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [client, setClient] = useState<any>(null);
   const { user } = useAuthenticator();
 
+  // Initialiser le client lors du montage du composant
+  useEffect(() => {
+    const initClient = async () => {
+      const dataService = await dataClient;
+      setClient(dataService);
+    };
+    
+    initClient();
+  }, []);
+
   const loadBuckets = async () => {
+    if (!client) return; // Ne pas essayer de charger si le client n'est pas prêt
+    
     try {
       setIsLoading(true);
-      const { data } = await dataClient.models.Bucket.list();
+      const { data } = await client.models.Bucket.list();
       setBuckets(data);
     } catch (error) {
       console.error("Error loading buckets:", error);
@@ -22,16 +35,20 @@ export function useBuckets() {
   };
 
   useEffect(() => {
-    loadBuckets();
-  }, []);
+    if (client) { // Ne charger que lorsque le client est disponible
+      loadBuckets();
+    }
+  }, [client]);
 
   const createBucket = async () => {
+    if (!client) return; // Vérifier que le client est disponible
+    
     const bucketName = window.prompt("Enter a name for the new bucket");
     if (!bucketName) return;
     
     try {
       setIsLoading(true);
-      await dataClient.models.Bucket.create({
+      await client.models.Bucket.create({
         name: bucketName,
         owner: user?.userId || "current-user",
       });
@@ -44,6 +61,8 @@ export function useBuckets() {
   };
 
   const updateBucket = async (bucketId: string) => {
+    if (!client) return; // Vérifier que le client est disponible
+    
     const bucket = buckets.find(b => b.id === bucketId);
     if (!bucket) return;
     
@@ -52,7 +71,7 @@ export function useBuckets() {
     
     try {
       setIsLoading(true);
-      const updatedBucket = await dataClient.models.Bucket.update({
+      const updatedBucket = await client.models.Bucket.update({
         id: bucketId,
         name: newName,
       });
@@ -70,11 +89,13 @@ export function useBuckets() {
   };
 
   const deleteBucket = async (bucketId: string) => {
+    if (!client) return; // Vérifier que le client est disponible
+    
     if (!window.confirm("Are you sure you want to delete this bucket?")) return;
     
     try {
       setIsLoading(true);
-      await dataClient.models.Bucket.delete({ id: bucketId });
+      await client.models.Bucket.delete({ id: bucketId });
       if (selectedBucket?.id === bucketId) {
         setSelectedBucket(null);
       }

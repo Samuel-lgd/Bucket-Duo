@@ -5,9 +5,7 @@ type ItemDetailProps = {
   categories: Schema["Category"]["type"][];
 };
 
-export function ItemDetail({ item, categories }: ItemDetailProps) {
-  // Trouver la catégorie correspondante
-  const category = categories.find(cat => cat.id === item.categoryID);
+export function ItemDetail({ item }: ItemDetailProps) {
 
   return (
     <div className="item-details">

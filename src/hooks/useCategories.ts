@@ -5,12 +5,22 @@ import type {Schema} from '../../amplify/data/resource';
 export function useCategories() {
   const [categories, setCategories] = useState<Schema["Category"]["type"][]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [client, setClient] = useState<any>(null);
   
-  // Obtenir le client de données
-  const client = createDataService(true);
+  // Initialiser le client lors du montage du composant
+  useEffect(() => {
+    const initClient = async () => {
+      const dataService = await createDataService(true);
+      setClient(dataService);
+    };
+    
+    initClient();
+  }, []);
 
   useEffect(() => {
     async function fetchCategories() {
+      if (!client) return; // Ne pas essayer de charger si le client n'est pas prêt
+      
       setIsLoading(true);
       try {
         const result = await client.models.Category.list();
@@ -23,10 +33,14 @@ export function useCategories() {
       }
     }
 
-    fetchCategories();
-  }, []); // Dépendance simplifiée, le client est stable
+    if (client) {
+      fetchCategories();
+    }
+  }, [client]); // Dépend du client
 
   const createCategory = async (name: string) => {
+    if (!client) return null; // Vérifier que le client est disponible
+    
     try {
       const result = await client.models.Category.create({
         name,
@@ -41,6 +55,8 @@ export function useCategories() {
   };
 
   const updateCategory = async (id: string, name: string) => {
+    if (!client) return null; // Vérifier que le client est disponible
+    
     try {
       const result = await client.models.Category.update({
         id,
@@ -57,6 +73,8 @@ export function useCategories() {
   };
 
   const deleteCategory = async (id: string) => {
+    if (!client) return false; // Vérifier que le client est disponible
+    
     try {
       await client.models.Category.delete({ id });
       setCategories(prev => prev.filter(cat => cat.id !== id));
