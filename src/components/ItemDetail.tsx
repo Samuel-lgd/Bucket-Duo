@@ -7,18 +7,23 @@ type ItemDetailProps = {
 export function ItemDetail({ item }: ItemDetailProps) {
   return (
     <div className="item-details">
-      <h3>{item.title}</h3>
+      <h3>
+        <i className="fa-solid fa-circle-info me-2"></i>
+        {item.title}
+      </h3>
+      
       {item.url && (
         <div className="item-url">
-          <strong>URL:</strong>{' '}
+          <strong><i className="fa-solid fa-link me-2"></i>URL:</strong>{' '}
           <a href={item.url} target="_blank" rel="noopener noreferrer">
             {item.url}
           </a>
         </div>
       )}
+      
       {item.info && (
         <div className="item-info">
-          <strong>Info:</strong>
+          <strong><i className="fa-solid fa-circle-info me-2"></i>Information:</strong>
           <p>{item.info}</p>
         </div>
       )}

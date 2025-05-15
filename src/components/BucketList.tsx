@@ -21,26 +21,54 @@ export function BucketList({
 }: BucketListProps) {
   return (
     <div>
-      <h2>My Buckets</h2>
-      {isLoading && <p>Loading...</p>}
+      <div className="buckets-header">
+        <h2>Mes Buckets</h2>
+      </div>
       
-      <ul className="bucket-list">
-        {buckets.map((bucket) => (
-          <li key={bucket.id} className={selectedBucket?.id === bucket.id ? 'selected' : ''}>
-            <span 
-              onClick={() => onSelectBucket(bucket)}
-              className="bucket-name"
+      {isLoading ? (
+        <div className="loading-text">
+          <div className="loading"></div>
+          Chargement...
+        </div>
+      ) : (
+        <ul className="bucket-list">
+          {buckets.map((bucket) => (
+            <li 
+              key={bucket.id} 
+              className={`bucket-item ${selectedBucket?.id === bucket.id ? 'selected' : ''}`}
             >
-              {bucket.name}
-            </span>
-            <div className="bucket-actions">
-              <button onClick={() => onUpdateBucket(bucket.id)} className="edit-btn">Edit</button>
-              <button onClick={() => onDeleteBucket(bucket.id)} className="delete-btn">Delete</button>
-            </div>
-          </li>
-        ))}
-      </ul>
-      <button onClick={onCreateBucket} className="new-bucket-btn">+ New Bucket</button>
+              <div className="bucket-content">
+                <span 
+                  onClick={() => onSelectBucket(bucket)}
+                  className="bucket-name"
+                >
+                  <i className="fa-solid fa-folder me-2"></i> {bucket.name}
+                </span>
+                <div className="bucket-actions">
+                  <button 
+                    onClick={() => onUpdateBucket(bucket.id)} 
+                    className="btn btn-success item-card-action"
+                    title="Modifier"
+                  >
+                    <i className="fa-solid fa-pen"></i>
+                  </button>
+                  <button 
+                    onClick={() => onDeleteBucket(bucket.id)} 
+                    className="btn btn-danger item-card-action"
+                    title="Supprimer"
+                  >
+                    <i className="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      
+      <button onClick={onCreateBucket} className="btn new-bucket-btn">
+        <i className="fa-solid fa-plus me-2"></i> Nouveau Bucket
+      </button>
     </div>
   );
 }
