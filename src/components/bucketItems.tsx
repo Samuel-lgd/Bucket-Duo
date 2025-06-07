@@ -2,6 +2,7 @@ import type {Schema} from "../../amplify/data/resource";
 import {useItems} from "../hooks/useItems";
 import {useCategories} from "../hooks/useCategories";
 import {ItemCard} from "./ItemCard";
+import {ItemForm, MagicItemForm} from "./ItemForm";
 
 type BucketItemsProps = { 
   bucket: Schema["Bucket"]["type"];
@@ -10,15 +11,24 @@ type BucketItemsProps = {
 
 function BucketItems({ bucket, onBucketUpdate }: BucketItemsProps) {
   const { categories, isLoading: categoriesLoading } = useCategories();
-  
-  const {
+    const {
     items,
     isLoading: itemsLoading,
     createItem,
     updateItem,
     deleteItem,
     selectedCategoryID,
-    setSelectedCategoryID
+    setSelectedCategoryID,
+    showItemForm,
+    setShowItemForm,
+    showMagicForm,
+    setShowMagicForm,
+    handleItemSubmit,
+    handleUpdateSubmit,
+    editingItem,
+    openMagicForm,
+    handleMagicSubmit,
+    magicLoading
   } = useItems(bucket.id, onBucketUpdate);
 
   const isLoading = categoriesLoading || itemsLoading;
@@ -72,9 +82,11 @@ function BucketItems({ bucket, onBucketUpdate }: BucketItemsProps) {
           <button onClick={createItem} className="btn btn-primary">
             <i className="fa-solid fa-plus me-2"></i> Ajouter un item
           </button>
-          
-          {isSystemCategory() && (
-            <button className="btn btn-success ms-2">
+            {isSystemCategory() && (
+            <button 
+              onClick={openMagicForm} 
+              className="btn btn-success ms-2"
+            >
               <i className="fa-solid fa-magic me-2"></i> Ajout magique
             </button>
           )}
@@ -108,6 +120,29 @@ function BucketItems({ bucket, onBucketUpdate }: BucketItemsProps) {
             </div>
           )}
         </>
+      )}
+        {/* Formulaire d'ajout/modification d'item */}
+      {showItemForm && (
+        <ItemForm
+          onSubmit={editingItem ? handleUpdateSubmit : handleItemSubmit}
+          onCancel={() => {
+            setShowItemForm(false);
+          }}
+          selectedCategoryID={selectedCategoryID}
+          categories={categories}
+          initialData={editingItem || undefined}
+          isEdit={!!editingItem}
+        />
+      )}
+      
+      {/* Formulaire d'ajout magique */}
+      {showMagicForm && selectedCategoryID && (
+        <MagicItemForm
+          onSubmit={(title) => handleMagicSubmit(title, selectedCategoryID)}
+          onCancel={() => setShowMagicForm(false)}
+          categoryName={categories.find(cat => cat.id === selectedCategoryID)?.name || ''}
+          isSubmitting={magicLoading}
+        />
       )}
     </div>
   );

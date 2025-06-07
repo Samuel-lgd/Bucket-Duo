@@ -120,11 +120,16 @@
   --transition-normal: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
   /* Blur effects */
   --blur-sm: blur(4px);
   --blur-md: blur(12px);
   --blur-lg: blur(24px);
+
+  /* Form styles */
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
 }
 
 /* Reset et base styles */
@@ -1190,11 +1195,15 @@ body::before {
     --bg-primary: #1e293b;
     --bg-secondary: #334155;
     --bg-tertiary: #475569;
-    --bg-dark: #0f172a;
-
-    --glass-bg: rgba(30, 41, 59, 0.85);
+    --bg-dark: #0f172a;    --glass-bg: rgba(30, 41, 59, 0.85);
     --glass-bg-strong: rgba(30, 41, 59, 0.95);
     --glass-border: rgba(255, 255, 255, 0.1);
+    
+    /* Form styles in dark mode */
+    --bg-card: #334155;
+    --bg-input: #475569;
+    --border: #64748b;
+    --border-light: #475569;
   }
 
   body {
@@ -1261,6 +1270,179 @@ body::before {
   transition: var(--transition-normal);
 }
 
+
+/* Formulaire Item */
+.item-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.item-form-container {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.item-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.item-form-header h3 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: var(--space-4);
+  padding: 0 var(--space-6);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  font-size: 1rem;
+  transition: var(--transition-fast);
+}
+
+.form-control:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-200);
+  outline: none;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  border-top: 1px solid var(--border-light);
+}
+
+/* Formulaire magique */
+.magic-form {
+  background: linear-gradient(to bottom right, var(--bg-card), var(--primary-50));
+  border: 1px solid var(--primary-100);
+  max-width: 550px;
+}
+
+.magic-form .item-form-header h3 {
+  color: var(--primary-700);
+}
+
+.magic-description {
+  padding: var(--space-5) var(--space-6) var(--space-2);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.magic-preview {
+  display: flex;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-md);
+  margin: 0 var(--space-6) var(--space-4);
+  border: 1px dashed var(--primary-300);
+}
+
+.magic-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-md);
+  margin-right: var(--space-4);
+  flex-shrink: 0;
+}
+
+.magic-info {
+  flex-grow: 1;
+}
+
+.magic-label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+  font-size: 0.9rem;
+}
+
+.magic-features {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.magic-features li {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+.magic-form .btn-success {
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
 /* Amélioration des tooltips */
 [data-tooltip] {

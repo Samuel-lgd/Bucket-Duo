@@ -18,11 +18,11 @@ const schema = a.schema({
   }).authorization(allow => [
       allow.owner(),
     ]),
-
   Item: a.model({
     title:    a.string().required(),
     url:      a.string(),
     info:     a.string(),
+    imageUrl: a.string(),
     owner:    a.id().required(),
     bucketID: a.id().required(),
     bucket:   a.belongsTo('Bucket', 'bucketID'),

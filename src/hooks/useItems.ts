@@ -8,6 +8,9 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategoryID, setSelectedCategoryID] = useState<string | null>(null);
   const [client, setClient] = useState<any>(null);
+  const [showItemForm, setShowItemForm] = useState(false);
+  const [showMagicForm, setShowMagicForm] = useState(false);
+  const [magicLoading, setMagicLoading] = useState(false);
   const { user } = useAuthenticator();
   
   // Initialiser le client lors du montage du composant
@@ -65,61 +68,111 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     setSelectedCategoryID("c1");
   }, []);
 
-  const createItem = async () => {
+  const createItem = () => {
+    // Ouvrir le formulaire d'ajout
+    setShowItemForm(true);
+  };
+  
+  const handleItemSubmit = async (itemData: {
+    title: string;
+    url?: string;
+    info?: string;
+    categoryID: string;
+  }) => {
     if (!client) return; // Vérifier que le client est disponible
-    
-    const title = window.prompt("Enter item title:");
-    if (!title) return;
-    
-    const url = window.prompt("Enter item URL (optional):");
-    const info = window.prompt("Enter item information (optional):");
-    
-    // Utiliser la catégorie sélectionnée ou la catégorie par défaut ("c1")
-    const categoryID = selectedCategoryID || "c1";
     
     try {
       setIsLoading(true);
       await client.models.Item.create({
-        title,
-        url: url || undefined,
-        info: info || undefined,
+        title: itemData.title,
+        url: itemData.url,
+        info: itemData.info,
         bucketID: bucketId,
-        categoryID,
+        categoryID: itemData.categoryID || selectedCategoryID || "c1",
         owner: user?.userId || "current-user",
       });
       
       await loadItems();
       if (onBucketUpdate) onBucketUpdate();
+      setShowItemForm(false);
     } catch (error) {
       console.error("Error creating item:", error);
     } finally {
       setIsLoading(false);
     }
   };
+  
+  const openMagicForm = () => {
+    setShowMagicForm(true);
+  };
+  
+  const handleMagicSubmit = async (title: string, categoryId: string) => {
+    if (!client) return;
+    
+    const catId = categoryId || selectedCategoryID || "c1";
+    
+    try {
+      setMagicLoading(true);
+      
+      // Utiliser le service de métadonnées pour enrichir l'élément
+      const { getEnrichedMetadata } = await import('../services/metadataService');
+      const enrichedData = await getEnrichedMetadata(title, catId);
+      
+      await client.models.Item.create({
+        title: enrichedData.title,
+        url: enrichedData.url,
+        info: enrichedData.info,
+        imageUrl: enrichedData.imageUrl,
+        bucketID: bucketId,
+        categoryID: catId,
+        owner: user?.userId || "current-user",
+      });
+      
+      await loadItems();
+      if (onBucketUpdate) onBucketUpdate();
+      setShowMagicForm(false);
+    } catch (error) {
+      console.error("Error creating magic item:", error);
+    } finally {
+      setMagicLoading(false);
+    }
+  };
 
+  const [editingItem, setEditingItem] = useState<Schema["Item"]["type"] | null>(null);
+  
   const updateItem = async (itemId: string) => {
-    if (!client) return; // Vérifier que le client est disponible
+    if (!client) return;
     
     const item = items.find(i => i.id === itemId);
     if (!item) return;
     
-    const title = window.prompt("Update item title:", item.title);
-    if (!title) return;
-    
-    const url = window.prompt("Update item URL:", item.url || "");
-    const info = window.prompt("Update item information:", item.info || "");
+    // Ouvrir le formulaire d'édition avec les données de l'item
+    setEditingItem(item);
+    setShowItemForm(true);
+  };
+  
+  const handleUpdateSubmit = async (itemData: {
+    title: string;
+    url?: string;
+    info?: string;
+    categoryID: string;
+  }) => {
+    if (!client || !editingItem) return;
     
     try {
       setIsLoading(true);
       await client.models.Item.update({
-        id: itemId,
-        title,
-        url: url || undefined,
-        info: info || undefined,
-        // Ne pas modifier la catégorie lors d'une mise à jour simple
+        id: editingItem.id,
+        title: itemData.title,
+        url: itemData.url,
+        info: itemData.info,
+        categoryID: itemData.categoryID, // Permettre de changer la catégorie
+        imageUrl: editingItem.imageUrl, // Préserver l'image existante
       });
       
       await loadItems();
+      setShowItemForm(false);
+      setEditingItem(null);
     } catch (error) {
       console.error("Error updating item:", error);
     } finally {
@@ -153,6 +206,17 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     deleteItem,
     refreshItems: loadItems,
     selectedCategoryID,
-    setSelectedCategoryID
+    setSelectedCategoryID,
+    // Nouveaux états et fonctions pour les formulaires
+    showItemForm,
+    setShowItemForm,
+    showMagicForm,
+    setShowMagicForm,
+    handleItemSubmit,
+    handleUpdateSubmit,
+    editingItem,
+    openMagicForm,
+    handleMagicSubmit,
+    magicLoading
   };
 }
