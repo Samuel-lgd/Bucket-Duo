@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import type {Schema} from '../../amplify/data/resource';
 import {useAuthenticator} from '@aws-amplify/ui-react';
-import {createDataService} from '../services/mockDataService';
+import {dataClient} from '../services/dataService';
 
 export function useItems(bucketId: string, onBucketUpdate?: () => void) {
   const [items, setItems] = useState<Schema["Item"]["type"][]>([]);
@@ -16,10 +16,9 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
   // Initialiser le client lors du montage du composant
   useEffect(() => {
     const initClient = async () => {
-      const dataService = await createDataService(true);
-      setClient(dataService);
+        const dataService = await dataClient;
+        setClient(dataService);
     };
-    
     initClient();
   }, []);
 
@@ -62,11 +61,6 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     }
   }, [loadItems, client]);
 
-  // Définir la catégorie par défaut à c1 seulement au premier montage du composant
-  useEffect(() => {
-    // Définir la catégorie par défaut (première catégorie)
-    setSelectedCategoryID("c1");
-  }, []);
 
   const createItem = () => {
     // Ouvrir le formulaire d'ajout

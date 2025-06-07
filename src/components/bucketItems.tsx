@@ -83,7 +83,8 @@ function BucketItems({ bucket, onBucketUpdate }: BucketItemsProps) {
             <i className="fa-solid fa-plus me-2"></i> Ajouter un item
           </button>
             {isSystemCategory() && (
-            <button 
+            <button
+                style={{ marginLeft: '10px' }}
               onClick={openMagicForm} 
               className="btn btn-success ms-2"
             >
