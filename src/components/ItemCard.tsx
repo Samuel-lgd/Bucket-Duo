@@ -2,24 +2,37 @@ import type {Schema} from '../../amplify/data/resource';
 
 // Fonction utilitaire pour obtenir une image par défaut basée sur la catégorie
 function getDefaultImage(title: string, categoryID?: string): string {
-  // Générer une graine stable basée sur le titre pour avoir une image cohérente
-  const seed = title.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+  const baseUrl = "data:image/svg+xml,";
+  let emoji = "📝";
+  let bgColor = "3498db";
   
   switch(categoryID) {
     case 'c1': // YouTube
-      return 'https://i.ytimg.com/vi/jNQXAC9IVRw/maxresdefault.jpg'; // Premier vidéo YouTube
+      emoji = "▶️";
+      bgColor = "ff0000";
+      break;
     case 'c2': // Films & Séries
-      return `https://via.placeholder.com/400x200/3498db/ffffff?text=${encodeURIComponent('Film: ' + title)}`;
+      emoji = "🎬";
+      bgColor = "3498db";
+      break;
     case 'c3': // Restaurants
-      return `https://via.placeholder.com/400x200/e67e22/ffffff?text=${encodeURIComponent('Restaurant: ' + title)}`;
+      emoji = "🍽️";
+      bgColor = "e67e22";
+      break;
     case 'c4': // Tourisme
-      return `https://via.placeholder.com/400x200/27ae60/ffffff?text=${encodeURIComponent('Lieu: ' + title)}`;
-    default:
-      // Images par défaut colorées aléatoires mais cohérentes
-      const colors = ['3498db', 'e74c3c', '2ecc71', 'f39c12', '9b59b6', '1abc9c'];
-      const color = colors[seed % colors.length];
-      return `https://via.placeholder.com/400x200/${color}/ffffff?text=${encodeURIComponent(title)}`;
+      emoji = "🗺️";
+      bgColor = "27ae60";
+      break;
   }
+  
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
+    <rect width="400" height="200" fill="#${bgColor}"/>
+    <text x="50%" y="50%" fill="white" font-size="72" text-anchor="middle" dominant-baseline="middle">
+      ${emoji}
+    </text>
+  </svg>`;
+
+  return baseUrl + encodeURIComponent(svg);
 }
 
 type ItemCardProps = {
@@ -76,6 +89,16 @@ export function ItemCard({ item, onUpdate, onDelete }: ItemCardProps) {
             <a href={item.url} target="_blank" rel="noopener noreferrer">
               <i className="fa-solid fa-link me-1"></i> Voir le lien
             </a>
+            {(item.categoryID === 'c3' || item.categoryID === 'c4') && (
+              <a 
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.title)}`}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="ms-2"
+              >
+                <i className="fa-solid fa-location-dot me-1"></i> S'y rendre
+              </a>
+            )}
           </div>
         )}
 
