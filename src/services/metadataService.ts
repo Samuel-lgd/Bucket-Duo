@@ -3,10 +3,54 @@
  * Utilise des APIs gratuites et des méthodes d'extraction simples
  */
 
-// Constantes pour les APIs 
-const YOUTUBE_API_KEY = 'AIzaSyDv-2F5HWx4G_hLra5P1c2SLoOO_6kXShk'; 
-const TMDB_API_KEY = '17117ab9c18276d48d8634390c025df4'; // API Key pour The Movie Database
-const GOOGLE_MAPS_API_KEY = 'AIzaSyBJqS9DSkGjGaX1TLK8ee-Qw3LuCOGwI8Y'; // Clé API Google Maps Platform valide
+// Récupération des clés API depuis l'environnement Amplify
+const getApiKey = (key: string, defaultValue: string = ''): string => {
+  try {
+    // Vérifier si window.process existe (peut être défini par Amplify)
+    if (window.process && window.process.env && window.process.env[key]) {
+      return window.process.env[key] || defaultValue;
+    }
+    
+    // Vérifier si process.env existe (pour Next.js ou autres frameworks)
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+      return process.env[key] || defaultValue;
+    }
+    
+    // Vérifier si import.meta.env existe (pour Vite)
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
+      return import.meta.env[key] || defaultValue;
+    }
+    
+    return defaultValue;
+  } catch (e) {
+    console.warn(`Erreur lors de la récupération de la clé API ${key}:`, e);
+    return defaultValue;
+  }
+};
+
+// Constantes pour les APIs récupérées depuis l'environnement
+const YOUTUBE_API_KEY = getApiKey('YOUTUBE_API_KEY', ''); 
+const TMDB_API_KEY = getApiKey('TMDB_API_KEY', '');
+const GOOGLE_MAPS_API_KEY = getApiKey('GOOGLE_MAPS_API_KEY', '');
+
+// Déclarer les variables d'environnement au niveau du type global
+declare global {
+  interface Window {
+    initGoogleMapsCallback: () => void;
+    google: typeof google;
+    process?: {
+      env?: Record<string, string>;
+    };
+  }
+  
+  namespace NodeJS {
+    interface ProcessEnv {
+      REACT_APP_YOUTUBE_API_KEY?: string;
+      REACT_APP_TMDB_API_KEY?: string;
+      REACT_APP_GOOGLE_MAPS_API_KEY?: string;
+    }
+  }
+}
 
 // Variable pour tracker si l'API Google Maps JavaScript est chargée
 let googleMapsLoaded = false;
@@ -19,6 +63,12 @@ let googleMapsLoadPromise: Promise<void> | null = null;
 export const loadGoogleMapsAPI = (): Promise<void> => {
   if (googleMapsLoaded) return Promise.resolve();
   if (googleMapsLoadPromise) return googleMapsLoadPromise;
+  
+  // Si pas de clé API, rejeter immédiatement
+  if (!GOOGLE_MAPS_API_KEY) {
+    console.warn('Aucune clé API Google Maps trouvée dans les variables d\'environnement');
+    return Promise.reject(new Error('Clé API Google Maps manquante'));
+  }
   
   googleMapsLoadPromise = new Promise((resolve, reject) => {
     // Fonction de callback pour Google Maps
