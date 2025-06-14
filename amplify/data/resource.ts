@@ -1,4 +1,5 @@
 import {a, type ClientSchema, defineData} from "@aws-amplify/backend";
+import { metadataEnrichment } from "../function/metadata-enrichment/resource";
 
 
 const schema = a.schema({
@@ -31,6 +32,26 @@ const schema = a.schema({
   }).authorization(allow => [
       allow.owner(),
     ]),
+
+  // Query pour l'enrichissement des métadonnées
+  enrichMetadata: a
+    .query()
+    .arguments({
+      title: a.string().required(),
+      categoryId: a.string().required(),
+    })
+    .returns(
+      a.customType({
+        success: a.boolean().required(),
+        title: a.string(),
+        url: a.string(),
+        info: a.string(),
+        imageUrl: a.string(),
+        error: a.string(),
+      })
+    )
+    .authorization(allow => [allow.authenticated()])
+    .handler(a.handler.function(metadataEnrichment)),
 });
 
 export type Schema = ClientSchema<typeof schema>;

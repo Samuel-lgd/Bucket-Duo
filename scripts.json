@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "check-migration": "node check-migration.js",
+    "test-lambda": "node test-lambda.js",
+    "deploy:sandbox": "npx ampx sandbox",
+    "deploy:once": "npx ampx sandbox --once",
+    "deploy:prod": "npx ampx pipeline-deploy --branch main",
+    "logs": "npx ampx sandbox --logs"
+  }
+}

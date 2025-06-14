@@ -2,12 +2,18 @@
   "name": "amplify-vite-react-template",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
-  "scripts": {
+  "type": "module",  "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check-migration": "node check-migration.js",    "setup-secrets": "powershell -ExecutionPolicy Bypass -File ./setup-secrets.ps1",
+    "test-secrets": "tsx test-secrets.ts",
+    "test-simple": "tsx test-simple.ts",
+    "deploy:sandbox": "npx ampx sandbox",
+    "deploy:once": "npx ampx sandbox --once",
+    "deploy:prod": "npx ampx pipeline-deploy --branch main",
+    "logs": "npx ampx sandbox --logs"
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.5.5",

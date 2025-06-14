@@ -108,8 +108,8 @@ export function useItems(bucketId: string, onBucketUpdate?: () => void) {
     try {
       setMagicLoading(true);
       
-      // Utiliser le service de métadonnées pour enrichir l'élément
-      const { getEnrichedMetadata } = await import('../services/metadataService');
+      // Utiliser le nouveau service Lambda pour enrichir l'élément
+      const { getEnrichedMetadata } = await import('../services/lambdaMetadataService');
       const enrichedData = await getEnrichedMetadata(title, catId);
       
       await client.models.Item.create({
